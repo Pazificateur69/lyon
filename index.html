@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lyon — A cinematic scroll story</title>
+    <meta name="description" content="Two rivers, a hill crowned with light — a cinematic scroll story through Lyon, from Fourvière to Vieux Lyon." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Lyon — A cinematic scroll story" />
+    <meta property="og:description" content="Two rivers, a hill crowned with light — a cinematic scroll story through Lyon, from Fourvière to Vieux Lyon." />
+    <meta property="og:image" content="assets/lyon/sky-lyon.webp" />
+    <meta name="theme-color" content="#0b1110" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦁</text></svg>" />
+    <link rel="preload" as="font" href="assets/fonts/OggText-Medium.woff2" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="intro-veil" aria-hidden="true">
+      <p class="intro-kicker">Auvergne-Rhône-Alpes</p>
+      <p class="intro-word"><span>L</span><span>Y</span><span>O</span><span>N</span><video class="intro-word-video" data-src="assets/lyon/sky-lyon.mp4" muted loop playsinline autoplay preload="auto"></video></p>
+      <p class="intro-progress">0%</p>
+    </div>
+    <main class="site-shell">
+      <section class="cinema-scroll" id="cinema" aria-label="Lyon cinematic scroll story">
+        <div class="stage">
+          <div class="world">
+            <video
+              class="scene-img sky-img"
+              poster="assets/lyon/sky-lyon.webp"
+              data-src="assets/lyon/sky-lyon.mp4"
+              muted loop playsinline autoplay preload="auto"
+            ></video>
+            <header class="site-header" aria-label="Primary navigation">
+              <a class="site-logo" href="#cinema">Auvergne-Rhône-Alpes</a>
+              <nav class="site-nav" aria-label="Main menu">
+                <a href="#cinema" data-fr="Intro">Intro</a>
+                <a href="#fourviere">Fourvière</a>
+                <a href="#oldtown">Vieux Lyon</a>
+                <a href="#basilique">Monuments</a>
+                <a href="#routes" data-fr="Parcours">Routes</a>
+              </nav>
+              <div class="header-tools">
+                <button class="night-toggle" type="button" aria-label="Toggle night mode" aria-pressed="false">
+                  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+                  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+                </button>
+                <button class="sound-toggle" type="button" aria-label="Toggle ambient sound" aria-pressed="false">
+                  <i></i><i></i><i></i>
+                </button>
+                <button class="language-switcher" type="button" aria-label="Switch language">
+                  <span class="lang-label">EN</span>
+                  <span aria-hidden="true">⌄</span>
+                </button>
+              </div>
+            </header>
+            <div class="back-stack">
+              <img
+                class="scene-img back-img back-four"
+                src="assets/lyon/fourviere-hill.webp"
+                alt=""
+              />
+              <section class="sights-slider" id="routes" aria-label="Lyon sights slider">
+                <div class="sights-track">
+                  <article class="sight-card" tabindex="0" role="button" aria-label="Open Fourvière card">
+                    <img class="sight-photo" src="assets/sights/sight-basilica.webp" alt="" loading="lazy" />
+                    <video class="sight-video" data-src="assets/sights/sv-basilica.mp4" muted loop playsinline preload="none"></video>
+                    <span class="sight-kicker" data-fr="Basilique">Hilltop Basilica</span>
+                    <img class="sight-pin" src="assets/pins/pin-basilica.svg" alt="" loading="lazy" />
+                    <h3>Notre-Dame de Fourvière</h3>
+                    <p data-fr="La basilique blanche qui couronne la colline au-dessus du Vieux Lyon.">The white basilica crowning Fourvière hill above the old city.</p>
+                  </article>
+                  <article class="sight-card" tabindex="0" role="button" aria-label="Open Vieux Lyon card">
+                    <img class="sight-photo" src="assets/sights/sight-oldtown.webp" alt="" loading="lazy" />
+                    <video class="sight-video" data-src="assets/sights/sv-oldtown.mp4" muted loop playsinline preload="none"></video>
+                    <span class="sight-kicker" data-fr="Vieille ville">Old Town</span>
+                    <img class="sight-pin" src="assets/pins/pin-oldtown.svg" alt="" loading="lazy" />
+                    <h3>Vieux Lyon</h3>
+                    <p data-fr="Cours Renaissance, traboules secrètes et ruelles pavées au bord de la Saône.">Renaissance courtyards, hidden traboules, and cobbled riverside lanes.</p>
+                  </article>
+                  <article class="sight-card" tabindex="0" role="button" aria-label="Open Roman Theatres card">
+                    <img class="sight-photo" src="assets/sights/sight-theatre.webp" alt="" loading="lazy" />
+                    <video class="sight-video" data-src="assets/sights/sv-theatre.mp4" muted loop playsinline preload="none"></video>
+                    <span class="sight-kicker" data-fr="Panorama">Viewpoint</span>
+                    <img class="sight-pin" src="assets/pins/pin-theatre.svg" alt="" loading="lazy" />
+                    <h3>Théâtres Romains</h3>
+                    <p data-fr="Des gradins antiques qui dominent Lyon et ses deux cours d'eau.">Ancient stone tiers looking back over Lyon and its two rivers.</p>
+                  </article>
+                  <article class="sight-card" tabindex="0" role="button" aria-label="Open Croix-Rousse card">
+                    <img class="sight-photo" src="assets/sights/sight-silk.webp" alt="" loading="lazy" />
+                    <video class="sight-video" data-src="assets/sights/sv-silk.mp4" muted loop playsinline preload="none"></video>
+                    <span class="sight-kicker" data-fr="Quartier des soyeux">Silk Quarter</span>
+                    <img class="sight-pin" src="assets/pins/pin-silk.svg" alt="" loading="lazy" />
+                    <h3>Croix-Rousse</h3>
+                    <p data-fr="La colline des canuts, tissée de traboules et d'ateliers ouverts.">The weavers' hill laced with traboules and open-workshop windows.</p>
+                  </article>
+                  <article class="sight-card" tabindex="0" role="button" aria-label="Open Confluences card">
+                    <img class="sight-photo" src="assets/sights/sight-museum.webp" alt="" loading="lazy" />
+                    <video class="sight-video" data-src="assets/sights/sv-museum.mp4" muted loop playsinline preload="none"></video>
+                    <span class="sight-kicker" data-fr="Musée">Museum</span>
+                    <img class="sight-pin" src="assets/pins/pin-museum.svg" alt="" loading="lazy" />
+                    <h3>Musée des Confluences</h3>
+                    <p data-fr="Sciences et sociétés au confluent du Rhône et de la Saône.">A bold science and society museum where the Rhône meets the Saône.</p>
+                  </article>
+                </div>
+              </section>
+              <img
+                class="scene-img back-img back-bazaar"
+                src="assets/lyon/vieux-lyon-rooftops.webp"
+                alt=""
+              />
+            </div>
+            <div class="sights-heading" aria-hidden="true">
+              <p class="sights-heading-step">07</p>
+              <h2 data-fr="Les incontournables">The essentials</h2>
+            </div>
+            <div class="sights-controls" aria-label="Slider controls">
+              <button class="sight-nav sight-prev" type="button" aria-label="Previous sight">←</button>
+              <button class="sight-nav sight-next" type="button" aria-label="Next sight">→</button>
+            </div>
+            <h1 class="hero-title">LYON</h1>
+            <img
+              class="scene-img splitframe-img splitframe-left"
+              src="assets/lyon/split-left.webp"
+              alt=""
+            />
+            <img
+              class="scene-img splitframe-img splitframe-right"
+              src="assets/lyon/split-right.webp"
+              alt=""
+            />
+            <div class="shade"></div>
+            <div class="dusk-veil" aria-hidden="true"></div>
+            <p class="tour-quote tour-quote-1" aria-hidden="true">« Capitale des Gaules »</p>
+            <p class="tour-quote tour-quote-2" aria-hidden="true">« Entre Rhône &amp; Saône »</p>
+            <div class="photo-chapter photo-chapter-saone photo-chapter--img-right">
+              <video data-src="assets/chapters/ch-saone.mp4" poster="assets/chapters/ch-saone.webp" muted loop playsinline preload="auto"></video>
+              <video class="night-img" data-src="assets/night/nv-saone.mp4" poster="assets/night/night-saone.webp" muted loop playsinline preload="none"></video>
+            </div>
+            <div class="photo-chapter photo-chapter-vieuxlyon photo-chapter--img-left">
+              <video data-src="assets/chapters/ch-vieuxlyon.mp4" poster="assets/chapters/ch-vieuxlyon.webp" muted loop playsinline preload="metadata"></video>
+              <video class="night-img" data-src="assets/night/nv-vieuxlyon.mp4" poster="assets/night/night-vieuxlyon.webp" muted loop playsinline preload="none"></video>
+            </div>
+            <div class="photo-chapter photo-chapter-basilique photo-chapter--img-right">
+              <video data-src="assets/chapters/ch-basilique.mp4" poster="assets/chapters/ch-basilique.webp" muted loop playsinline preload="metadata"></video>
+              <img class="night-img" data-src="assets/night/night-basilique.webp" alt="" />
+            </div>
+            <div class="photo-chapter photo-chapter-theatre photo-chapter--img-left">
+              <video data-src="assets/chapters/ch-theatre.mp4" poster="assets/chapters/ch-theatre.webp" muted loop playsinline preload="metadata"></video>
+              <video class="night-img" data-src="assets/night/nv-theatre.mp4" poster="assets/night/night-theatre.webp" muted loop playsinline preload="none"></video>
+            </div>
+            <div class="photo-chapter photo-chapter-bellecour photo-chapter--img-right">
+              <video data-src="assets/chapters/ch-bellecour.mp4" poster="assets/chapters/ch-bellecour.webp" muted loop playsinline preload="metadata"></video>
+              <img class="night-img" data-src="assets/night/night-bellecour.webp" alt="" />
+            </div>
+            <div class="photo-chapter photo-chapter-confluences photo-chapter--img-left">
+              <video data-src="assets/chapters/ch-confluences.mp4" poster="assets/chapters/ch-confluences.webp" muted loop playsinline preload="metadata"></video>
+              <img class="night-img" data-src="assets/night/night-confluences.webp" alt="" />
+            </div>
+            <div class="traboule-gallery" aria-label="Traboules gallery">
+              <div class="traboule-track">
+                <div class="traboule-intro">
+                  <p class="chapter-step" data-fr="Interlude">Interlude</p>
+                  <h2 data-fr="Les passages secrets.">The secret passages.</h2>
+                  <p data-fr="Sous les façades, les traboules relient cours et ruelles — un labyrinthe discret que Lyon garde depuis la Renaissance.">Beneath the facades, the traboules link courtyards and lanes — a discreet labyrinth Lyon has kept since the Renaissance.</p>
+                </div>
+                <figure class="traboule-panel"><img src="assets/traboules/traboule-1.webp" alt="" loading="lazy" /></figure>
+                <figure class="traboule-panel"><img src="assets/traboules/traboule-2.webp" alt="" loading="lazy" /></figure>
+                <figure class="traboule-panel"><img src="assets/traboules/traboule-3.webp" alt="" loading="lazy" /></figure>
+                <figure class="traboule-panel"><img src="assets/traboules/traboule-4.webp" alt="" loading="lazy" /></figure>
+              </div>
+            </div>
+          </div>
+          <section class="intro-copy" aria-label="Lyon overview">
+            <p data-fr="Entre Rhône et Saône, une colline couronnée de lumière et une vieille ville Renaissance faite pour les longs déjeuners, les flâneries et les soirées sous les réverbères.">Two rivers, a hill crowned with light, and a Renaissance old town made for long lunches, late strolls, and lamplit evenings.</p>
+            <div class="hero-tags" aria-label="Lyon highlights">
+              <span data-fr="Colline de Fourvière">Fourvière Hill</span>
+              <span>Rhône &amp; Saône</span>
+              <span data-fr="Vieux Lyon classé UNESCO">UNESCO old town</span>
+            </div>
+            <div class="scroll-hint" aria-hidden="true">
+              <span data-fr="Défiler">Scroll</span>
+              <span class="scroll-line"></span>
+            </div>
+          </section>
+          <section class="story-panel story-panel-photo panel-left" id="fourviere" aria-label="Fourvière details">
+            <p class="chapter-step">01 / 06</p>
+            <h2 data-fr="La Saône guide le regard vers Fourvière.">The Saône leads the eye to Fourvière.</h2>
+            <p data-fr="Le pont Bonaparte franchit la rivière en trois arches de pierre claire, reliant Bellecour au Vieux Lyon sous la colline illuminée.">Pont Bonaparte crosses the river in three pale-stone arches, linking Bellecour to Vieux Lyon beneath the illuminated hill.</p>
+            <dl class="facts">
+              <div>
+                <dt>3</dt>
+                <dd data-fr="Arches de pierre sur la Saône">Stone-faced arches across the Saône</dd>
+              </div>
+              <div>
+                <dt>1950</dt>
+                <dd data-fr="Achèvement du pont Bonaparte actuel">Present Pont Bonaparte completed</dd>
+              </div>
+            </dl>
+          </section>
+          <section class="story-panel story-panel-photo panel-right" id="oldtown" aria-label="Old town details">
+            <p class="chapter-step">02 / 06</p>
+            <h2 data-fr="Le Vieux Lyon garde la ville à portée de main.">Vieux Lyon keeps the city close.</h2>
+            <p data-fr="Traboules pavées, cours Renaissance, tables de bouchons et cafés en bord de Saône restent à quelques pas de la colline.">Cobbled traboules, Renaissance courtyards, bouchon tables, and riverside cafés stay within a short walk of the hill.</p>
+            <button class="note-button" type="button">
+              <span aria-hidden="true">↗</span>
+              <span data-fr="Explorer les incontournables">Explore the sights</span>
+            </button>
+          </section>
+          <section class="story-panel story-panel-photo panel-left" id="basilique" aria-label="Fourvière basilica">
+            <p class="chapter-step">03 / 06</p>
+            <h2 data-fr="Fourvière, la colline qui prie.">Fourvière, the hill that prays.</h2>
+            <p data-fr="Dressée au-dessus de la ville après 1870, la basilique veille sur Lyon avec ses quatre tours octogonales face au ciel.">Raised high above the city after 1870, the basilica watches over Lyon with its four octagonal towers facing the sky.</p>
+            <dl class="facts">
+              <div>
+                <dt>4</dt>
+                <dd data-fr="Tours octogonales">Octagonal towers</dd>
+              </div>
+              <div>
+                <dt>1896</dt>
+                <dd data-fr="Consécration de la basilique">Basilica consecrated</dd>
+              </div>
+            </dl>
+          </section>
+          <section class="story-panel story-panel-photo panel-right" id="theatres" aria-label="Roman theatres">
+            <p class="chapter-step">04 / 06</p>
+            <h2 data-fr="Deux mille ans d'applaudissements.">Two thousand years of applause.</h2>
+            <p data-fr="Creusé dans la colline sous Auguste, le grand théâtre romain accueille encore les soirées d'été sous les étoiles.">Carved into the hill under Augustus, the great Roman theatre still hosts summer nights under the stars.</p>
+            <dl class="facts">
+              <div>
+                <dt>10 000</dt>
+                <dd data-fr="Spectateurs dans l'Antiquité">Spectators in antiquity</dd>
+              </div>
+              <div>
+                <dt>1946</dt>
+                <dd data-fr="Premières Nuits de Fourvière">First Nuits de Fourvière</dd>
+              </div>
+            </dl>
+          </section>
+          <section class="story-panel story-panel-photo panel-left" id="bellecour" aria-label="Place Bellecour">
+            <p class="chapter-step">05 / 06</p>
+            <h2 data-fr="Bellecour, le cœur à ciel ouvert.">Bellecour, the city's open heart.</h2>
+            <p data-fr="Entre Rhône et Saône, l'une des plus grandes places piétonnes d'Europe déroule son gravier rouge sous la statue de Louis XIV.">Between Rhône and Saône, one of Europe's largest pedestrian squares rolls out its red gravel beneath the statue of Louis XIV.</p>
+            <dl class="facts">
+              <div>
+                <dt>62 000</dt>
+                <dd data-fr="Mètres carrés à ciel ouvert">Square metres open to the sky</dd>
+              </div>
+              <div>
+                <dt>1825</dt>
+                <dd data-fr="Louis XIV retrouve son cheval">Louis XIV back on his horse</dd>
+              </div>
+            </dl>
+          </section>
+          <section class="story-panel story-panel-photo panel-right" id="confluences" aria-label="Musée des Confluences">
+            <p class="chapter-step">06 / 06</p>
+            <h2 data-fr="Là où les deux rivières se rejoignent.">Where the two rivers meet.</h2>
+            <p data-fr="À la pointe sud de la presqu'île, le musée de cristal et d'acier clôt la visite là où le Rhône embrasse la Saône.">At the southern tip of the peninsula, the crystal-and-steel museum closes the visit where the Rhône embraces the Saône.</p>
+          </section>
+          <nav class="tour-rail" aria-label="Tour progress">
+            <button type="button" data-target="#fourviere"><span>La Saône</span></button>
+            <button type="button" data-target="#oldtown"><span>Vieux Lyon</span></button>
+            <button type="button" data-target="#basilique"><span data-fr="Basilique">Basilica</span></button>
+            <button type="button" data-target="#theatres"><span data-fr="Théâtres">Theatres</span></button>
+            <button type="button" data-target="#bellecour"><span>Bellecour</span></button>
+            <button type="button" data-target="#confluences"><span>Confluences</span></button>
+          </nav>
+          <svg class="tour-map" viewBox="0 0 110 150" aria-hidden="true">
+            <path class="map-river" d="M30 8 C26 40 40 70 52 95 L55 128" />
+            <path class="map-river" d="M92 10 C88 50 70 90 58 110 L55 128" />
+            <path class="map-river" d="M55 128 L55 148" />
+            <circle class="map-dot" data-target="#fourviere" cx="34" cy="52" r="3.5" />
+            <circle class="map-dot" data-target="#oldtown" cx="30" cy="66" r="3.5" />
+            <circle class="map-dot" data-target="#basilique" cx="18" cy="76" r="3.5" />
+            <circle class="map-dot" data-target="#theatres" cx="22" cy="90" r="3.5" />
+            <circle class="map-dot" data-target="#bellecour" cx="62" cy="98" r="3.5" />
+            <circle class="map-dot" data-target="#confluences" cx="55" cy="126" r="3.5" />
+            <circle class="map-marker" cx="34" cy="52" r="4.5" />
+          </svg>
+          <div class="scroll-progress" aria-hidden="true"></div>
+          <div class="film-grain" aria-hidden="true"></div>
+        </div>
+      </section>
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <p class="footer-kicker" data-fr="Fin de la visite">End of the tour</p>
+          <p class="footer-title"><span class="footer-title-text" data-fr="Lyon vous attend.">Lyon awaits.</span><video class="footer-title-video" data-src="assets/lyon/sky-lyon.mp4" muted loop playsinline preload="none"></video></p>
+          <button class="footer-cta" type="button">
+            <span aria-hidden="true">↑</span>
+            <span data-fr="Revoir la visite">Replay the tour</span>
+          </button>
+          <nav class="footer-nav" aria-label="Tour chapters">
+            <a href="#cinema" data-fr="Intro">Intro</a>
+            <a href="#fourviere">La Saône</a>
+            <a href="#oldtown">Vieux Lyon</a>
+            <a href="#basilique" data-fr="Basilique">Basilica</a>
+            <a href="#theatres" data-fr="Théâtres">Theatres</a>
+            <a href="#bellecour">Bellecour</a>
+            <a href="#confluences">Confluences</a>
+            <a href="#traboules">Traboules</a>
+            <a href="#routes" data-fr="Parcours">Routes</a>
+          </nav>
+          <div class="footer-meta">
+            <span>Auvergne-Rhône-Alpes</span>
+            <span data-fr="Une balade cinématique entre Rhône et Saône">A cinematic stroll between the Rhône and the Saône</span>
+            <span>Lyon, France · <span class="lyon-clock">--:--</span></span>
+          </div>
+        </div>
+        <p class="footer-watermark" aria-hidden="true">LYON</p>
+      </footer>
+    </main>
+    <div class="cursor-dot" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"><span class="cursor-label" data-fr="Défiler">Scroll</span></div>
+  </body>
+</html>
