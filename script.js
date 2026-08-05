@@ -528,8 +528,11 @@ function update(frameTime) {
   navLinks.forEach((link, i) => link.classList.toggle("is-current", i === currentNav));
   setStyle(scrollProgress, "transform", `scaleX(${qz(smoothScroll / (section.offsetHeight - window.innerHeight), 0.002).toFixed(3)})`);
 
-  const beyond = Math.max(0, window.scrollY - (section.offsetHeight - window.innerHeight));
+  const maxScroll = section.offsetHeight - window.innerHeight;
+  const beyond = Math.max(0, window.scrollY - maxScroll);
   setStyle(footerWatermark, "transform", `translateX(-50%) translateY(${qz(-beyond * 0.16, 0.5).toFixed(1)}px)`);
+  // La scène fond vers la couleur du footer sur la fin de la visite.
+  setVar("--outro", qz(clamp((window.scrollY - (maxScroll - 120)) / 520), 0.02).toFixed(2));
   setVar("--sights-visibility", sightsEnter > 0.01 ? "visible" : "hidden");
   setVar("--sights-y", "0px");
   setVar("--sights-enter-x", `${qz((1 - sightsEnter) * 420, 0.05).toFixed(2)}vw`);

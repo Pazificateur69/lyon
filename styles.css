@@ -1315,6 +1315,18 @@ body.is-night .traboule-panel img { filter: brightness(0.55) saturate(0.7); }
   animation: fade-in-soft 700ms 400ms backwards;
 }
 
+/* Fondu de sortie : la scène se dissout dans la couleur du footer au lieu de
+   buter dessus. Opacité compositée uniquement. */
+.outro-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 29;
+  background: #0b1110;
+  opacity: var(--outro, 0);
+  pointer-events: none;
+  will-change: opacity;
+}
+
 .film-grain {
   position: absolute;
   inset: 0;
