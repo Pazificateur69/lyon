@@ -679,9 +679,7 @@ body.is-night .night-toggle .icon-sun { display: block; }
   color: #fdf1e1;
   border: 1px solid rgba(253, 241, 225, 0.38);
   border-radius: 999px;
-  background: rgba(12, 18, 16, 0.28);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(12, 18, 16, 0.45);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.14em;

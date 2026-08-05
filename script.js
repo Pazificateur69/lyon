@@ -15,6 +15,9 @@ let targetScroll = 0;
 let smoothScroll = 0;
 let prevSmoothScroll = 0;
 let grainLevel = 0;
+let galleryIdle = false;
+let lastMarkerCx = "";
+const skyMedia = document.querySelector("video.sky-img");
 let initialized = false;
 let rafPending = false;
 let lastFrameTime = 0;
@@ -23,6 +26,24 @@ const originalSightCount = originalSightCards.length;
 let activeSight = originalSightCount;
 
 const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+
+// Optimisation : toutes les écritures de style passent par des setters mémoïsés
+// et des valeurs quantifiées — on n'invalide le style que quand la valeur
+// affichable change réellement (critique pour les filter: blur() plein écran,
+// re-rasterisés par le GPU à chaque nouveau rayon).
+const qz = (v, step) => Math.round(v / step) * step;
+const varCache = new Map();
+const setVar = (name, value) => {
+  if (varCache.get(name) === value) return;
+  varCache.set(name, value);
+  root.style.setProperty(name, value);
+};
+const setStyle = (el, prop, value) => {
+  const cache = el.__styleCache || (el.__styleCache = {});
+  if (cache[prop] === value) return;
+  cache[prop] = value;
+  el.style[prop] = value;
+};
 
 // Visite guidée : chaque chapitre photo occupe ~1300px de scroll (a-b entrée, c-d sortie).
 // side: +1 = image à droite (texte à gauche), -1 = image à gauche. Entrées et sorties
@@ -289,50 +310,72 @@ function update(frameTime) {
   const sightsScreenTop = Math.min(220, Math.max(112, window.innerHeight * 0.19)) - 50;
   const sightsParentTop = window.innerHeight - (window.innerHeight - sightsScreenTop) / backScale;
 
-  root.style.setProperty("--mx", (reduceMotion.matches ? 0 : mouseX).toFixed(4));
-  root.style.setProperty("--my", (reduceMotion.matches ? 0 : mouseY).toFixed(4));
+  setVar("--mx", (reduceMotion.matches ? 0 : qz(mouseX, 0.005)).toFixed(3));
+  setVar("--my", (reduceMotion.matches ? 0 : qz(mouseY, 0.005)).toFixed(3));
 
-  root.style.setProperty("--back-opacity", (1 - frame2.active * 0.06).toFixed(4));
-  root.style.setProperty("--back-x", `${(mouseX * -12).toFixed(2)}px`);
-  root.style.setProperty("--back-y", `${(mouseY * -4).toFixed(2)}px`);
-  root.style.setProperty("--back-scale", backScale.toFixed(4));
-  root.style.setProperty("--four-y", `${(10 + progress * 10).toFixed(2)}vh`);
-  root.style.setProperty("--four-scale", (0.78 + progress * 0.16).toFixed(4));
-  root.style.setProperty("--bazaar-y", `${(20 - progress * 8).toFixed(2)}vh`);
-  root.style.setProperty("--blur-px", `${(blurActive * 5).toFixed(2)}px`);
-  root.style.setProperty("--back-brightness", (1 - blurActive * 0.255).toFixed(4));
-  root.style.setProperty("--bazaar-blur-px", `${(tourBlur * 4).toFixed(2)}px`);
-  root.style.setProperty("--bazaar-brightness", (1 - tourBlur * 0.24).toFixed(4));
-  root.style.setProperty("--bazaar-saturation", (1 + frame3.active * 0.18).toFixed(4));
-  root.style.setProperty("--shade-opacity", "1");
-  root.style.setProperty("--shade-z", tourBlur > 0.02 ? "2" : "0");
-  root.style.setProperty("--shade-top-alpha", (blurActive * 0.465).toFixed(4));
-  root.style.setProperty("--shade-mid-alpha", (blurActive * 0.42).toFixed(4));
-  root.style.setProperty("--shade-bottom-alpha", (blurActive * 0.51).toFixed(4));
+  setVar("--back-opacity", qz(1 - frame2.active * 0.06, 0.02).toFixed(2));
+  setVar("--back-x", `${qz(mouseX * -12, 0.5).toFixed(1)}px`);
+  setVar("--back-y", `${qz(mouseY * -4, 0.5).toFixed(1)}px`);
+  setVar("--back-scale", qz(backScale, 0.002).toFixed(3));
+  setVar("--four-y", `${qz(10 + progress * 10, 0.1).toFixed(1)}vh`);
+  setVar("--four-scale", qz(0.78 + progress * 0.16, 0.002).toFixed(3));
+  setVar("--bazaar-y", `${qz(20 - progress * 8, 0.1).toFixed(1)}vh`);
+  // Flou quantifié au demi-pixel : ~10 re-rasterisations par transition au lieu
+  // d'une par frame.
+  setVar("--blur-px", `${qz(blurActive * 5, 0.5).toFixed(1)}px`);
+  setVar("--back-brightness", qz(1 - blurActive * 0.255, 0.02).toFixed(2));
+  setVar("--bazaar-blur-px", `${qz(tourBlur * 4, 0.5).toFixed(1)}px`);
+  setVar("--bazaar-brightness", qz(1 - tourBlur * 0.24, 0.02).toFixed(2));
+  setVar("--bazaar-saturation", qz(1 + frame3.active * 0.18, 0.02).toFixed(2));
+  setVar("--shade-opacity", "1");
+  setVar("--shade-z", tourBlur > 0.02 ? "2" : "0");
+  setVar("--shade-top-alpha", qz(blurActive * 0.465, 0.02).toFixed(2));
+  setVar("--shade-mid-alpha", qz(blurActive * 0.42, 0.02).toFixed(2));
+  setVar("--shade-bottom-alpha", qz(blurActive * 0.51, 0.02).toFixed(2));
 
-  root.style.setProperty("--title-y", `${(introExit * -210).toFixed(2)}px`);
-  root.style.setProperty("--title-scale", (1 - introExit * 0.08).toFixed(4));
-  root.style.setProperty("--title-opacity", (1 - introExit).toFixed(4));
+  // La vidéo du ciel ne joue que quand le ciel est réellement net à l'écran.
+  if (skyMedia && skyMedia.src) {
+    const wantSky = allowVideo && tourBlur < 0.35;
+    if (wantSky && skyMedia.paused) skyMedia.play().catch(() => {});
+    else if (!wantSky && !skyMedia.paused) skyMedia.pause();
+  }
+
+  setVar("--title-y", `${qz(introExit * -210, 0.5).toFixed(1)}px`);
+  setVar("--title-scale", qz(1 - introExit * 0.08, 0.002).toFixed(3));
+  setVar("--title-opacity", qz(1 - introExit, 0.02).toFixed(2));
 
   heroLetters.forEach((el, i) => {
-    el.style.transform = `translate3d(${(letterSpread[i] * introExit * 170).toFixed(2)}px, ${(Math.abs(letterSpread[i]) * introExit * -46).toFixed(2)}px, 0) rotate(${(letterSpread[i] * introExit * 6).toFixed(2)}deg)`;
+    setStyle(el, "transform", `translate3d(${qz(letterSpread[i] * introExit * 170, 0.5).toFixed(1)}px, ${qz(Math.abs(letterSpread[i]) * introExit * -46, 0.5).toFixed(1)}px, 0) rotate(${qz(letterSpread[i] * introExit * 6, 0.1).toFixed(1)}deg)`);
   });
 
-  root.style.setProperty("--split-left-x", `calc(-50% + ${(-10 - splitDrift * 42).toFixed(2)}vw + ${(mouseX * 22).toFixed(2)}px)`);
-  root.style.setProperty("--split-left-y", `${(mouseY * 10 + sharedHeroY - splitDrift * 180).toFixed(2)}px`);
-  root.style.setProperty("--split-left-scale", (1 + sharedHeroScale + frame2.enter * 0.5).toFixed(4));
-  root.style.setProperty("--split-right-x", `calc(-50% + ${(10 + splitDrift * 42).toFixed(2)}vw + ${(mouseX * 22).toFixed(2)}px)`);
-  root.style.setProperty("--split-right-y", `${(mouseY * 10 + sharedHeroY - splitDrift * 180).toFixed(2)}px`);
-  root.style.setProperty("--split-right-scale", (1 + sharedHeroScale + frame2.enter * 0.5).toFixed(4));
-  root.style.setProperty("--split-opacity", (1 - splitFade).toFixed(4));
+  setVar("--split-left-x", `calc(-50% + ${qz(-10 - splitDrift * 42, 0.05).toFixed(2)}vw + ${qz(mouseX * 22, 0.5).toFixed(1)}px)`);
+  setVar("--split-left-y", `${qz(mouseY * 10 + sharedHeroY - splitDrift * 180, 0.5).toFixed(1)}px`);
+  setVar("--split-left-scale", qz(1 + sharedHeroScale + frame2.enter * 0.5, 0.002).toFixed(3));
+  setVar("--split-right-x", `calc(-50% + ${qz(10 + splitDrift * 42, 0.05).toFixed(2)}vw + ${qz(mouseX * 22, 0.5).toFixed(1)}px)`);
+  setVar("--split-right-y", `${qz(mouseY * 10 + sharedHeroY - splitDrift * 180, 0.5).toFixed(1)}px`);
+  setVar("--split-right-scale", qz(1 + sharedHeroScale + frame2.enter * 0.5, 0.002).toFixed(3));
+  setVar("--split-opacity", qz(1 - splitFade, 0.02).toFixed(2));
 
-  root.style.setProperty("--intro-copy-y", `${(introExit * 90).toFixed(2)}px`);
-  root.style.setProperty("--intro-copy-opacity", (1 - introExit).toFixed(4));
+  setVar("--intro-copy-y", `${qz(introExit * 90, 0.5).toFixed(1)}px`);
+  setVar("--intro-copy-opacity", qz(1 - introExit, 0.02).toFixed(2));
 
   let countersRunning = false;
   photoChapters.forEach((ch) => {
     const seg = segmentInOut(smoothScroll, ch.a, ch.b, ch.c, ch.d);
     ch.seg = seg;
+    // Chapitre hors champ : une seule écriture d'état final, puis plus rien.
+    if (seg.active <= 0.0001) {
+      if (!ch.wasIdle) {
+        ch.wasIdle = true;
+        setStyle(ch.el, "opacity", "0");
+        setStyle(ch.panel, "opacity", "0");
+        ch.panel.classList.remove("is-revealed");
+        if (ch.video && !ch.video.paused) ch.video.pause();
+        if (ch.nightVideo && !ch.nightVideo.paused) ch.nightVideo.pause();
+      }
+      return;
+    }
+    ch.wasIdle = false;
     // Ken Burns continu sur toute la durée du chapitre
     const holdP = clamp((smoothScroll - ch.a) / (ch.d - ch.a));
     let scale = 1.09 - holdP * 0.06;
@@ -344,19 +387,20 @@ function update(frameTime) {
     }
     const imgX = ch.side * ((1 - seg.enter) * 120 + exitSlide + mouseX * 10);
     const panelX = -ch.side * ((1 - seg.enter) * 70 + seg.exit * 110);
-    const mediaTransform = `translate3d(${imgX.toFixed(2)}px, -50%, 0) scale(${scale.toFixed(4)})`;
-    ch.el.style.opacity = seg.active.toFixed(4);
-    ch.mediaEls.forEach((m) => { m.style.transform = mediaTransform; });
-    ch.panel.style.opacity = (seg.active * (1 - seg.exit)).toFixed(4);
-    ch.panel.style.transform = `translate3d(${panelX.toFixed(2)}px, -50%, 0)`;
-    ch.panel.classList.toggle("is-revealed", seg.enter > 0.35 && seg.active > 0.02);
+    const mediaTransform = `translate3d(${qz(imgX, 0.5).toFixed(1)}px, -50%, 0) scale(${qz(scale, 0.002).toFixed(3)})`;
+    setStyle(ch.el, "opacity", qz(seg.active, 0.02).toFixed(2));
+    ch.mediaEls.forEach((m) => { setStyle(m, "transform", mediaTransform); });
+    setStyle(ch.panel, "opacity", qz(seg.active * (1 - seg.exit), 0.02).toFixed(2));
+    setStyle(ch.panel, "transform", `translate3d(${qz(panelX, 0.5).toFixed(1)}px, -50%, 0)`);
+    ch.panel.classList.toggle("is-revealed", seg.enter > 0.35);
+    // Seuil de lecture à 0.12 : le décodage vidéo démarre hors du pic de la transition.
     if (ch.video) {
-      const wantPlay = allowVideo && !nightMode && seg.active > 0.02 && ch.video.src;
+      const wantPlay = allowVideo && !nightMode && seg.active > 0.12 && ch.video.src;
       if (wantPlay && ch.video.paused) ch.video.play().catch(() => {});
       else if (!wantPlay && !ch.video.paused) ch.video.pause();
     }
     if (ch.nightVideo) {
-      const wantNight = allowVideo && nightMode && seg.active > 0.02 && ch.nightVideo.src;
+      const wantNight = allowVideo && nightMode && seg.active > 0.12 && ch.nightVideo.src;
       if (wantNight && ch.nightVideo.paused) ch.nightVideo.play().catch(() => {});
       else if (!wantNight && !ch.nightVideo.paused) ch.nightVideo.pause();
     }
@@ -364,19 +408,27 @@ function update(frameTime) {
 
   // Galerie horizontale des traboules
   const gallerySeg = segmentInOut(smoothScroll, 7350, 7600, 9050, 9250);
-  trabouleGallery.style.opacity = gallerySeg.active.toFixed(4);
-  const galleryProgress = smoothstep(7450, 9050, smoothScroll);
-  const galleryMax = Math.max(0, trabouleTrack.scrollWidth - window.innerWidth * 0.92);
-  const galleryX = window.innerWidth * 0.06 - galleryProgress * galleryMax;
-  trabouleTrack.style.transform = `translate3d(${galleryX.toFixed(1)}px, -50%, 0)`;
+  if (gallerySeg.active <= 0.0001) {
+    if (!galleryIdle) {
+      galleryIdle = true;
+      setStyle(trabouleGallery, "opacity", "0");
+    }
+  } else {
+    galleryIdle = false;
+    setStyle(trabouleGallery, "opacity", qz(gallerySeg.active, 0.02).toFixed(2));
+    const galleryProgress = smoothstep(7450, 9050, smoothScroll);
+    const galleryMax = Math.max(0, trabouleTrack.scrollWidth - window.innerWidth * 0.92);
+    const galleryX = window.innerWidth * 0.06 - galleryProgress * galleryMax;
+    setStyle(trabouleTrack, "transform", `translate3d(${qz(galleryX, 0.5).toFixed(1)}px, -50%, 0)`);
+  }
 
   // Le grain de pellicule s'intensifie avec la vitesse de scroll
   grainLevel = lerp(grainLevel, clamp(Math.abs(smoothScroll - prevSmoothScroll) / 30), 0.12);
   prevSmoothScroll = smoothScroll;
-  root.style.setProperty("--grain-opacity", (0.05 + grainLevel * 0.1).toFixed(4));
+  setVar("--grain-opacity", qz(0.05 + grainLevel * 0.1, 0.01).toFixed(2));
 
-  root.style.setProperty("--num-x", `${(mouseX * 26).toFixed(1)}px`);
-  root.style.setProperty("--num-y", `${(mouseY * 18).toFixed(1)}px`);
+  setVar("--num-x", `${qz(mouseX * 26, 0.5).toFixed(1)}px`);
+  setVar("--num-y", `${qz(mouseY * 18, 0.5).toFixed(1)}px`);
 
   factCounters.forEach((c) => {
     const active = c.ch.seg.active;
@@ -397,20 +449,20 @@ function update(frameTime) {
   });
 
   const dusk = smoothstep(1500, 6600, smoothScroll) * (1 - sightsEnter) * 0.85;
-  root.style.setProperty("--dusk", dusk.toFixed(4));
+  setVar("--dusk", qz(dusk, 0.02).toFixed(2));
 
   tourQuotes.forEach((q) => {
     const t = (smoothScroll - q.center) / q.span;
     if (Math.abs(t) >= 1) {
-      q.el.style.opacity = "0";
+      setStyle(q.el, "opacity", "0");
       return;
     }
-    q.el.style.opacity = Math.pow(1 - Math.abs(t), 1.4).toFixed(4);
-    q.el.style.transform = `translate3d(calc(-50% + ${(-t * 38).toFixed(2)}vw), -50%, 0)`;
+    setStyle(q.el, "opacity", qz(Math.pow(1 - Math.abs(t), 1.4), 0.02).toFixed(2));
+    setStyle(q.el, "transform", `translate3d(calc(-50% + ${qz(-t * 38, 0.05).toFixed(2)}vw), -50%, 0)`);
   });
 
   const railOpacity = smoothstep(420, 700, smoothScroll) * (1 - smoothstep(7350, 7700, smoothScroll));
-  root.style.setProperty("--rail-opacity", railOpacity.toFixed(4));
+  setVar("--rail-opacity", qz(railOpacity, 0.02).toFixed(2));
   tourRail.classList.toggle("is-visible", railOpacity > 0.5);
   let railActive = 0;
   railButtons.forEach((b, i) => {
@@ -435,22 +487,26 @@ function update(frameTime) {
       }
     }
   }
-  mapMarker.setAttribute("cx", mx.toFixed(1));
-  mapMarker.setAttribute("cy", my.toFixed(1));
+  const markerCx = mx.toFixed(1);
+  if (markerCx !== lastMarkerCx) {
+    lastMarkerCx = markerCx;
+    mapMarker.setAttribute("cx", markerCx);
+    mapMarker.setAttribute("cy", my.toFixed(1));
+  }
 
   if (cursorOn && cursorInit) {
     const ringEase = 1 - Math.pow(1 - 0.22, frameRatio);
     ringX = lerp(ringX, cursorX, ringEase);
     ringY = lerp(ringY, cursorY, ringEase);
-    cursorRing.style.transform = `translate3d(${ringX.toFixed(1)}px, ${ringY.toFixed(1)}px, 0)`;
+    setStyle(cursorRing, "transform", `translate3d(${ringX.toFixed(1)}px, ${ringY.toFixed(1)}px, 0)`);
     cursorRing.classList.toggle("has-label", smoothScroll < 260 && !cursorRing.classList.contains("is-link"));
   }
 
-  root.style.setProperty("--sights-controls-opacity", sightsControlsEnter.toFixed(4));
+  setVar("--sights-controls-opacity", qz(sightsControlsEnter, 0.02).toFixed(2));
   sightsControls.classList.toggle("is-ready", sightsControlsEnter > 0.98);
   sightsSlider.classList.toggle("is-in", sightsEnterRaw > 0.12);
-  root.style.setProperty("--sights-heading-opacity", Math.pow(sightsEnterRaw, 1.2).toFixed(4));
-  root.style.setProperty("--sights-heading-y", `${((1 - sightsEnterRaw) * 30).toFixed(1)}px`);
+  setVar("--sights-heading-opacity", qz(Math.pow(sightsEnterRaw, 1.2), 0.02).toFixed(2));
+  setVar("--sights-heading-y", `${qz((1 - sightsEnterRaw) * 30, 0.5).toFixed(1)}px`);
   if (sightsEnterRaw > 0.05 || frameTime < cardParallaxUntil) updateCardParallax();
 
   siteHeader.classList.toggle("is-scrolled", smoothScroll > 80);
@@ -459,16 +515,16 @@ function update(frameTime) {
     if (smoothScroll >= anchorTargets[link.getAttribute("href")] - 520) currentNav = i;
   });
   navLinks.forEach((link, i) => link.classList.toggle("is-current", i === currentNav));
-  scrollProgress.style.transform = `scaleX(${(smoothScroll / (section.offsetHeight - window.innerHeight)).toFixed(4)})`;
+  setStyle(scrollProgress, "transform", `scaleX(${qz(smoothScroll / (section.offsetHeight - window.innerHeight), 0.002).toFixed(3)})`);
 
   const beyond = Math.max(0, window.scrollY - (section.offsetHeight - window.innerHeight));
-  footerWatermark.style.transform = `translateX(-50%) translateY(${(-beyond * 0.16).toFixed(1)}px)`;
-  root.style.setProperty("--sights-visibility", sightsEnter > 0.01 ? "visible" : "hidden");
-  root.style.setProperty("--sights-y", "0px");
-  root.style.setProperty("--sights-enter-x", `${((1 - sightsEnter) * 420).toFixed(2)}vw`);
-  root.style.setProperty("--sights-scale", (1 / backScale).toFixed(4));
-  root.style.setProperty("--sights-top", `${sightsParentTop.toFixed(2)}px`);
-  root.style.setProperty("--sights-screen-top", `${sightsScreenTop.toFixed(2)}px`);
+  setStyle(footerWatermark, "transform", `translateX(-50%) translateY(${qz(-beyond * 0.16, 0.5).toFixed(1)}px)`);
+  setVar("--sights-visibility", sightsEnter > 0.01 ? "visible" : "hidden");
+  setVar("--sights-y", "0px");
+  setVar("--sights-enter-x", `${qz((1 - sightsEnter) * 420, 0.05).toFixed(2)}vw`);
+  setVar("--sights-scale", qz(1 / backScale, 0.002).toFixed(3));
+  setVar("--sights-top", `${qz(sightsParentTop, 0.5).toFixed(1)}px`);
+  setVar("--sights-screen-top", `${qz(sightsScreenTop, 0.5).toFixed(1)}px`);
 
   const shouldContinue = (
     Math.abs(smoothScroll - targetScroll) > 0.08
