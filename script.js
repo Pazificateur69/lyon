@@ -18,6 +18,22 @@ let grainLevel = 0;
 let galleryIdle = false;
 let lastMarkerCx = "";
 const skyMedia = document.querySelector("video.sky-img");
+
+// Clones pré-floutés : le flou de la visite est un simple cross-fade d'opacité
+// vers ces couches rasterisées une seule fois — le rayon n'est jamais animé.
+(() => {
+  const skyBlur = document.createElement("div");
+  skyBlur.className = "sky-img--blur";
+  skyBlur.setAttribute("aria-hidden", "true");
+  skyMedia.after(skyBlur);
+  document.querySelectorAll(".back-four, .back-bazaar").forEach((img) => {
+    const clone = img.cloneNode(false);
+    clone.classList.add("blur-clone");
+    clone.setAttribute("aria-hidden", "true");
+    clone.removeAttribute("alt");
+    img.after(clone);
+  });
+})();
 let initialized = false;
 let rafPending = false;
 let lastFrameTime = 0;
@@ -320,13 +336,8 @@ function update(frameTime) {
   setVar("--four-y", `${qz(10 + progress * 10, 0.1).toFixed(1)}vh`);
   setVar("--four-scale", qz(0.78 + progress * 0.16, 0.002).toFixed(3));
   setVar("--bazaar-y", `${qz(20 - progress * 8, 0.1).toFixed(1)}vh`);
-  // Flou quantifié au demi-pixel : ~10 re-rasterisations par transition au lieu
-  // d'une par frame.
-  setVar("--blur-px", `${qz(blurActive * 5, 0.5).toFixed(1)}px`);
-  setVar("--back-brightness", qz(1 - blurActive * 0.255, 0.02).toFixed(2));
-  setVar("--bazaar-blur-px", `${qz(tourBlur * 4, 0.5).toFixed(1)}px`);
-  setVar("--bazaar-brightness", qz(1 - tourBlur * 0.24, 0.02).toFixed(2));
-  setVar("--bazaar-saturation", qz(1 + frame3.active * 0.18, 0.02).toFixed(2));
+  // Le flou n'est plus qu'une opacité compositée vers les clones pré-floutés.
+  setVar("--blur-opacity", qz(blurActive, 0.02).toFixed(2));
   setVar("--shade-opacity", "1");
   setVar("--shade-z", tourBlur > 0.02 ? "2" : "0");
   setVar("--shade-top-alpha", qz(blurActive * 0.465, 0.02).toFixed(2));
@@ -393,9 +404,9 @@ function update(frameTime) {
     setStyle(ch.panel, "opacity", qz(seg.active * (1 - seg.exit), 0.02).toFixed(2));
     setStyle(ch.panel, "transform", `translate3d(${qz(panelX, 0.5).toFixed(1)}px, -50%, 0)`);
     ch.panel.classList.toggle("is-revealed", seg.enter > 0.35);
-    // Seuil de lecture à 0.12 : le décodage vidéo démarre hors du pic de la transition.
+    // Seuil de lecture à 0.3 : le décodage vidéo démarre hors du pic de la transition.
     if (ch.video) {
-      const wantPlay = allowVideo && !nightMode && seg.active > 0.12 && ch.video.src;
+      const wantPlay = allowVideo && !nightMode && seg.active > 0.3 && ch.video.src;
       if (wantPlay && ch.video.paused) ch.video.play().catch(() => {});
       else if (!wantPlay && !ch.video.paused) ch.video.pause();
     }
